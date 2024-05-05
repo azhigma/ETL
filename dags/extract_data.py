@@ -9,7 +9,7 @@ import psycopg2
 
 lat = '56.50' #latitude
 lon = '60.35' #longitude
-TOKEN = '1e89b2fd03d6387a5479864d6c246237' #your unique API key
+TOKEN = '' #your unique API key
 user = '' # Location your database
 password = ''
 host = ''
