@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
-import pandas as pandas
+import pandas as pd
 import requests
 import json
 import sqlalchemy.orm
@@ -16,7 +16,7 @@ host = ''
 database = ''
 
 # dag = DAG(
-#     dag_id='nasa_etl',
+#     dag_id='weather_etl',
 #     start_date=datetime(2024,4,25),
 #     schedule_interval='@daily'
 # )
