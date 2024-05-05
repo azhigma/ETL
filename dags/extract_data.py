@@ -9,17 +9,17 @@ import psycopg2
 
 lat = '56.50' #latitude
 lon = '60.35' #longitude
-TOKEN = '1e89b2fd03d6387a5479864d6c246237' #your unique API key
+TOKEN = '' #your unique API key
 user = '' # Location your database
 password = ''
 host = ''
 database = ''
 
-# dag = DAG(
-#     dag_id='weather_etl',
-#     start_date=datetime(2024,4,25),
-#     schedule_interval='@daily'
-# )
+dag = DAG(
+    dag_id='weather_etl',
+    start_date=datetime(2024,4,25),
+    schedule_interval='@daily'
+ )
 
 def get_data_from_api():
     url = f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={TOKEN}'
@@ -65,7 +65,7 @@ def create_table():
     try:
         df.to_sql('weather_ekaterinburg', engine, index=False, if_axists='append')
     except:
-        print('Data lready exists in the database')
+        print('Data already exists in the database')
 
     conn.close()
     print('Close database successfully')    
