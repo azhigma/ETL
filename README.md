@@ -2,8 +2,8 @@
 
 ## Описание
 
-В этом проекте я построила ETL Pipeline.
-[Используемый API]:(https://openweathermap.org/api)
+Используемый API: https://openweathermap.org/api
+
 Инструменты: Airflow, Docker, pandas, Postgres
 
 
