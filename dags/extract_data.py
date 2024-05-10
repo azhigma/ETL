@@ -4,58 +4,86 @@ from datetime import datetime
 import pandas as pd
 import requests
 import json
-import sqlalchemy.orm
+import sqlalchemy
 import psycopg2
 
+
+# Необходимые данные для работы с api и базой данных 
 lat = '56.50' #latitude
 lon = '60.35' #longitude
 TOKEN = '' #your unique API key
-user = '' # Location your database
-password = ''
-host = ''
-database = ''
+user = 'postgres' 
+password = '12345'
+host = 'localhost'
+port = '5438'
+db = 'postgres'
 
 dag = DAG(
     dag_id='weather_etl',
     start_date=datetime(2024,4,25),
-    schedule_interval='@daily'
+    schedule_interval='@hourly'
  )
 
+# Получение данных о погоде с api
 def get_data_from_api():
     url = f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={TOKEN}'
     response = requests.get(url)
     data = response.json()
 
-    weather = []
+# Создание списков
+    weather = [] 
     temp = []
     wind_speed = []
+    date = []
+    time = []
+  
+    today = datetime.now() 
+    date.append(today.date()) # извлечение даты и добавление в список
+    time.append(today.time()) # извлечение времени и добавление в список
 
+# цикла для добавления в листы данных об описании погоды, температуры и скорости ветра
     for i in data:
-        weather.append(data['weather']['main'])
+        weather.append(data['weather'][0]['main'])
         temp.append(data['main']['temp'])
-        wend_speed(data['wind']['speed'])
+        wend_speed.append(data['wind']['speed'])
     
+ # создание словаря на основе имеющихся списков   
     weather_dict = {
+        'date': date,
+        'time': time,
         'description': weather,
         'temperature': temp,
         'wind_speed': wind_speed
     }
 
-    df = pd.DateFrame(weather_dict, columns=['descriprion', 'temperature', 'wind_speed'])
+# создание dataframe  на основе словаря
+    df = pd.DateFrame(weather_dict, columns=['date', 'time', 'descriprion', 'temperature', 'wind_speed'])
     print(df)
+    return df
     
-def create_table():
+
+def transform_data(df):
+    df['temperature'] = df['temperature'].astype('float') - 273.15 # приводим к формату float from string, переводи из kernel в цельсий
+    df['wind_speed'] = df['wind_speed'].astype('float') # приводим к формату float from string 
+    return df
+
+
+def load_data(df):
     
-    engine = sqlalhemy.create_engine(DATABASE_LOCATION)
+    # подключаемся к базе данных
+    engine = sqlalhemy.create_engine(f'postgresql://{user}:{password}@{host}:{port}/{db}')
     conn = psycopg2.connect(user=user, password=password, host=host, port=port, database=database)
     cursor = conn.cursor()
 
-    sql_query = """ 
-    CREATE TABLE IF NOT EXISTS weather_ekateriburg(
-        description VARCHAR()
-        temperature 
-        wind_speed 
-        CONSTRAINT primary_key_constraind PRIMARY KEY ()
+    # создаем таблицу
+    sql_query = """  
+    CREATE TABLE IF NOT EXISTS weather_ekat(
+        id SERIAL PRIMARY KEY,
+        date DATE,
+        time TIME,
+        description VARCHAR(50),
+        temperature REAL,
+        wind_speed REAL
     )
     """
 
@@ -63,7 +91,7 @@ def create_table():
     print('Opened database successfully')
     
     try:
-        df.to_sql('weather_ekaterinburg', engine, index=False, if_axists='append')
+        df.to_sql('weather_ekat', engine, index=False, if_exists='append')
     except:
         print('Data already exists in the database')
 
@@ -77,9 +105,15 @@ def create_table():
     )
 
     stage2 = PythonOperator(
-        task_id = 'create_table', 
+        task_id = "transform_data", 
+        python_callable=transform_data,
+        dag=dag
+    )
+
+    stage3 = PythonOperator(
+        task_id = 'load_data', 
         python_callable=create_table,
         dag=dag
     )
 
-stage1 >> stage2
+stage1 >> stage2 >> stage3
