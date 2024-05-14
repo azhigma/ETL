@@ -112,7 +112,7 @@ def load_data(df):
 
     stage3 = PythonOperator(
         task_id = 'load_data', 
-        python_callable=create_table,
+        python_callable=load_data,
         dag=dag
     )
 
