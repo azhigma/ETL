@@ -25,7 +25,7 @@ def get_weather():
     def extract_data(): 
         lat = '56.50' #latitude
         lon = '60.35' #longitude
-        TOKEN = '1e89b2fd03d6387a5479864d6c246237' #your unique API key
+        TOKEN = '' #your unique API key
         url = f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={TOKEN}'
         response = requests.get(url)
         data = response.json()
