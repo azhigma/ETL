@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from airflow.decorators import dag, task
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.operators.python import PythonOperator
@@ -60,9 +59,11 @@ def get_weather():
 
         return df
 
-        @task
-        def load_data(df):
-              user = 'postgres' 
+    data_today = extract_data()
+
+    @task
+    def load_data(df):
+        user = 'postgres' 
         password = '12345'
         host = 'localhost'
         port = '5438'
@@ -72,5 +73,8 @@ def get_weather():
         engine = sqlalchemy.create_engine(f'postgresql://{user}:{password}@{host}:{port}/{db}')
         df.to_sql(name='weather_ekat', con=engine, index=False, if_exists='append')
 
+    load_data(data_today)
 
-    create_table >> get_data >> load_data
+weather_today = get_weather()
+
+create_table >> get_data >> load_data
