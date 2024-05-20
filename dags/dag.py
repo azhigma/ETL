@@ -59,9 +59,9 @@ def get_load_data():
     
     user = 'postgres' 
     password = ''
-    host = 'localhost'
+    host = 'host.docker.internal'
     port = '5432'
-    db = 'ekat'
+    db = 'postgres'
     
     # подключаемся к базе данных
     engine = sqlalchemy.create_engine(f'postgresql://{user}:{password}@{host}:{port}/{db}')
@@ -75,9 +75,9 @@ create_table = PostgresOperator(
         postgres_conn_id='my_postgres'
     )
 
-get_load = PythonOperator(
-    task_id='get_data_from_api',
-    python_callable=get_data_from_api,
+get_load_data = PythonOperator(
+    task_id='get_load_data',
+    python_callable=get_load_data,
     dag=dag
 )
 
